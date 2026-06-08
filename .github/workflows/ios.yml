@@ -1,0 +1,112 @@
+name: Build iOS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    name: Build iOS (simulator)
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Capacitor deps
+        run: npm install
+
+      - name: Inject production API URL
+        env:
+          BIXCART_API_URL: ${{ secrets.BIXCART_API_URL }}
+        run: node scripts/inject-api-url.js
+
+      - name: Capacitor sync
+        run: npx cap sync ios
+
+      - name: Install CocoaPods
+        working-directory: ios/App
+        run: pod install --repo-update
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Build for simulator (unsigned)
+        run: |
+          xcodebuild \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -sdk iphonesimulator \
+            -configuration Debug \
+            -derivedDataPath ios/build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            build | xcpretty --color || true
+
+      - name: Upload simulator build
+        uses: actions/upload-artifact@v4
+        with:
+          name: bixcart-ios-sim-${{ github.sha }}
+          path: ios/build/Build/Products/Debug-iphonesimulator/App.app
+          retention-days: 7
+          if-no-files-found: warn
+
+  # ── Signed IPA for real device / App Store ───────────────────────────────
+  # Secrets: BUILD_CERTIFICATE_BASE64, P12_PASSWORD,
+  #          BUILD_PROVISION_PROFILE_BASE64, KEYCHAIN_PASSWORD
+  #
+  # build-ios-signed:
+  #   runs-on: macos-latest
+  #   if: github.ref == 'refs/heads/main'
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-node@v4
+  #       with: { node-version: '20', cache: 'npm' }
+  #     - run: npm install
+  #     - name: Inject API URL
+  #       env: { BIXCART_API_URL: "${{ secrets.BIXCART_API_URL }}" }
+  #       run: node scripts/inject-api-url.js
+  #     - run: npx cap sync ios
+  #     - name: Install CocoaPods
+  #       working-directory: ios/App
+  #       run: pod install --repo-update
+  #     - name: Install cert & profile
+  #       env:
+  #         BUILD_CERTIFICATE_BASE64:          ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+  #         P12_PASSWORD:                      ${{ secrets.P12_PASSWORD }}
+  #         BUILD_PROVISION_PROFILE_BASE64:    ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
+  #         KEYCHAIN_PASSWORD:                 ${{ secrets.KEYCHAIN_PASSWORD }}
+  #       run: |
+  #         CERT=$RUNNER_TEMP/cert.p12
+  #         PP=$RUNNER_TEMP/bixcart.mobileprovision
+  #         KC=$RUNNER_TEMP/app.keychain-db
+  #         echo -n "$BUILD_CERTIFICATE_BASE64"        | base64 --decode -o $CERT
+  #         echo -n "$BUILD_PROVISION_PROFILE_BASE64"  | base64 --decode -o $PP
+  #         security create-keychain -p "$KEYCHAIN_PASSWORD" $KC
+  #         security set-keychain-settings -lut 21600 $KC
+  #         security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KC
+  #         security import $CERT -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KC
+  #         security list-keychain -d user -s $KC
+  #         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+  #         cp $PP ~/Library/MobileDevice/Provisioning\ Profiles
+  #     - name: Archive & export IPA
+  #       run: |
+  #         xcodebuild -workspace ios/App/App.xcworkspace -scheme App \
+  #           -sdk iphoneos -configuration Release \
+  #           -archivePath $RUNNER_TEMP/bixcart.xcarchive archive | xcpretty
+  #         xcodebuild -exportArchive \
+  #           -archivePath $RUNNER_TEMP/bixcart.xcarchive \
+  #           -exportOptionsPlist ios/ExportOptions.plist \
+  #           -exportPath $RUNNER_TEMP/ipa | xcpretty
+  #     - uses: actions/upload-artifact@v4
+  #       with:
+  #         name: bixcart-signed-ipa-${{ github.sha }}
+  #         path: ${{ runner.temp }}/ipa/App.ipa

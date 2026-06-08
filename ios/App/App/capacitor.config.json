@@ -1,0 +1,42 @@
+{
+	"appId": "com.bixcart.app",
+	"appName": "Bixcart",
+	"webDir": "frontend",
+	"server": {
+		"cleartext": false
+	},
+	"plugins": {
+		"PushNotifications": {
+			"presentationOptions": [
+				"badge",
+				"sound",
+				"alert"
+			]
+		},
+		"StatusBar": {
+			"style": "LIGHT",
+			"backgroundColor": "#ffffff"
+		},
+		"SplashScreen": {
+			"launchShowDuration": 1200,
+			"backgroundColor": "#ffffff",
+			"showSpinner": false
+		}
+	},
+	"android": {
+		"allowMixedContent": false,
+		"captureInput": true,
+		"webContentsDebuggingEnabled": false
+	},
+	"ios": {
+		"contentInset": "always",
+		"scrollEnabled": true
+	},
+	"packageClassList": [
+		"AppPlugin",
+		"CAPBrowserPlugin",
+		"PushNotificationsPlugin",
+		"SplashScreenPlugin",
+		"StatusBarPlugin"
+	]
+}
