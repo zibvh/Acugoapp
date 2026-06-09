@@ -495,3 +495,83 @@ h1,h2,h3,h4,h5 { line-height: 1.15; letter-spacing: -0.02em; }
 
 /* Smooth transitions for toggled panels */
 .filter-panel, .conv-list { transition: none; }
+
+/* ── BOTTOM NAV (app only) ───────────────────────────────────────────────── */
+#bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 64px;
+  background: var(--surface);
+  border-top: 1.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  z-index: 1000;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.bn-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  flex: 1;
+  text-decoration: none;
+  color: var(--ink-3);
+  font-size: 11px;
+  font-weight: 500;
+  transition: color .15s;
+  padding: 6px 0;
+}
+
+.bn-item svg {
+  width: 22px;
+  height: 22px;
+}
+
+.bn-item.active {
+  color: var(--accent);
+}
+
+.bn-item span {
+  font-family: var(--font-body);
+  letter-spacing: 0;
+}
+
+/* Sell button — filled circle */
+.bn-sell-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.15);
+}
+
+.bn-sell-btn svg {
+  width: 20px;
+  height: 20px;
+  stroke: white;
+}
+
+.bn-item:has(.bn-sell-btn) span {
+  color: var(--ink-3);
+  font-size: 11px;
+}
+
+.bn-item:has(.bn-sell-btn).active span {
+  color: var(--accent);
+}
+
+/* Push page content above bottom nav */
+body { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+
+/* On desktop web, hide bottom nav */
+@media (min-width: 769px) {
+  #bottom-nav { display: none; }
+  body { padding-bottom: 0; }
+}

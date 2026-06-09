@@ -144,59 +144,64 @@ function renderNav(activePage = '') {
   const navEl = document.querySelector('.nav');
   if (!navEl) return;
 
-  const isBuyer = user?.role === 'buyer';
-  const isSeller = user?.role === 'seller';
-
-  // Buyers see marketplace, sellers don't
-  const links = isSeller ? [] : [
-    { href: '/pages/marketplace.html', label: 'Browse', icon: icons.search },
-  ];
-  if (isSeller) links.push({ href: '/pages/sell.html', label: 'Sell', icon: icons.plus });
-
-  const linksHTML = links.map(l =>
-    `<li><a href="${l.href}" class="${activePage === l.label ? 'active' : ''}">${l.icon} ${l.label}</a></li>`
-  ).join('');
-
-  const dashHref = isSeller ? '/pages/seller-dashboard.html' : '/pages/buyer-dashboard.html';
-
   const authHTML = user ? `
     <a href="/pages/messages.html" class="btn btn-surface btn-icon" title="Messages" id="nav-msg-btn" style="position:relative">
       ${icons.messageCircle}
       <span id="nav-unread-badge" style="display:none;position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;background:var(--accent);border:1.5px solid var(--bg);"></span>
     </a>
-    <div style="position:relative">
-      <div class="avatar avatar-sm" style="border:2px solid var(--border);cursor:pointer;" onclick="document.getElementById('nav-user-menu').classList.toggle('open')">${getInitials(user.full_name)}</div>
-      <div id="nav-user-menu" class="nav-user-menu">
-        <a href="${dashHref}" class="nav-user-menu-item">${icons.user} Dashboard</a>
-        <a href="/pages/messages.html" class="nav-user-menu-item">${icons.messageCircle} Messages</a>
-        <a href="/pages/wishlist.html" class="nav-user-menu-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Wishlist</a>
-        <div class="nav-user-menu-sep"></div>
-        <button class="nav-user-menu-item nav-user-menu-logout" onclick="logout()">${icons.logout} Log out</button>
-      </div>
-    </div>
   ` : `
-    <a href="/pages/auth.html" class="btn btn-ghost btn-sm">Log in</a>
     <a href="/pages/auth.html?mode=register" class="btn btn-primary btn-sm">Sign up free</a>
   `;
 
   navEl.innerHTML = `
     <a href="/pages/marketplace.html" class="nav-logo">Bix<span>cart</span></a>
-    <ul class="nav-links">${linksHTML}</ul>
     <div class="nav-spacer"></div>
     <div class="nav-actions">${authHTML}</div>
   `;
 
-  // Close menu on outside click
   if (user) {
-    document.addEventListener('click', e => {
-      const menu = document.getElementById('nav-user-menu');
-      if (menu && !menu.closest('.nav-actions')?.contains(e.target)) menu.classList.remove('open');
-    }, { once: false });
-
-    // Refresh badge now that the element exists, and start polling
     setTimeout(updateUnreadBadge, 0);
     startUnreadPoll();
   }
+
+  // Render bottom nav
+  renderBottomNav(activePage);
+}
+
+function renderBottomNav(activePage = '') {
+  const user = auth.getUser();
+  const isSeller = user?.role === 'seller';
+  const dashHref = isSeller ? '/pages/seller-dashboard.html' : '/pages/buyer-dashboard.html';
+
+  // Remove existing bottom nav if any
+  document.getElementById('bottom-nav')?.remove();
+
+  const nav = document.createElement('nav');
+  nav.id = 'bottom-nav';
+
+  const currentPath = window.location.pathname;
+  const isHome = currentPath.endsWith('marketplace.html') || currentPath.endsWith('index.html') || currentPath === '/';
+  const isSell = currentPath.endsWith('sell.html');
+  const isProfile = currentPath.endsWith('buyer-dashboard.html') || currentPath.endsWith('seller-dashboard.html') || currentPath.endsWith('user-profile.html');
+
+  nav.innerHTML = `
+    <a href="/pages/marketplace.html" class="bn-item ${isHome ? 'active' : ''}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Home</span>
+    </a>
+    <a href="/pages/sell.html" class="bn-item ${isSell ? 'active' : ''}">
+      <div class="bn-sell-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></svg>
+      </div>
+      <span>Sell</span>
+    </a>
+    <a href="${user ? dashHref : '/pages/auth.html'}" class="bn-item ${isProfile ? 'active' : ''}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Profile</span>
+    </a>
+  `;
+
+  document.body.appendChild(nav);
 }
 
 // ── LOGOUT ──
@@ -251,37 +256,8 @@ function skeletonCard() {
 function renderFooter() {
   const el = document.querySelector('.footer');
   if (!el) return;
-  el.innerHTML = `
-  <div class="container">
-    <div class="footer-grid">
-      <div class="footer-brand">
-        <div class="footer-brand-logo">Bix<span>cart</span></div>
-        <p>The campus marketplace built for Ajayi Crowther University students. Buy, sell, connect.</p>
-      </div>
-      <div class="footer-col"><h5>Marketplace</h5><ul>
-        <li><a href="/pages/marketplace.html">Browse listings</a></li>
-        <li><a href="/pages/sell.html">Sell an item</a></li>
-        <li><a href="/pages/marketplace.html?category=Textbooks">Textbooks</a></li>
-        <li><a href="/pages/marketplace.html?category=Electronics">Electronics</a></li>
-      </ul></div>
-      <div class="footer-col"><h5>Account</h5><ul>
-        <li><a href="/pages/buyer-dashboard.html">My purchases</a></li>
-        <li><a href="/pages/seller-dashboard.html">Seller dashboard</a></li>
-        <li><a href="/pages/messages.html">Messages</a></li>
-        <li><a href="/pages/auth.html">Sign in</a></li>
-      </ul></div>
-      <div class="footer-col"><h5>Company</h5><ul>
-        <li><a href="#">About Bixcart</a></li>
-        <li><a href="#">Safety tips</a></li>
-        <li><a href="#">Privacy policy</a></li>
-        <li><a href="#">Terms of use</a></li>
-      </ul></div>
-    </div>
-    <div class="footer-bottom">
-      <span>© 2026 Bixcart — Ajayi Crowther University, Oyo, Nigeria</span>
-      <span>Made for students, by students.</span>
-    </div>
-  </div>`;
+  // Footer hidden in app — navigation handled by bottom tab bar
+  el.style.display = 'none';
 }
 
 // ── ICONS (Lucide SVG snippets, 18px) ──
