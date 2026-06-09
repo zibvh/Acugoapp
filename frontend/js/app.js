@@ -184,17 +184,21 @@ function renderBottomNav(activePage = '') {
   const isSell = currentPath.endsWith('sell.html');
   const isProfile = currentPath.endsWith('buyer-dashboard.html') || currentPath.endsWith('seller-dashboard.html') || currentPath.endsWith('user-profile.html');
 
-  nav.innerHTML = `
-    <a href="/pages/marketplace.html" class="bn-item ${isHome ? 'active' : ''}">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-      <span>Home</span>
-    </a>
+  const sellTab = isSeller ? `
     <a href="/pages/sell.html" class="bn-item ${isSell ? 'active' : ''}">
       <div class="bn-sell-btn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></svg>
       </div>
       <span>Sell</span>
     </a>
+  ` : '';
+
+  nav.innerHTML = `
+    <a href="/pages/marketplace.html" class="bn-item ${isHome ? 'active' : ''}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Home</span>
+    </a>
+    ${sellTab}
     <a href="${user ? dashHref : '/pages/auth.html'}" class="bn-item ${isProfile ? 'active' : ''}">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       <span>Profile</span>
