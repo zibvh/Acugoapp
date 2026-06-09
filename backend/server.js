@@ -10,7 +10,8 @@ const app = express();
 // Trust proxy headers (needed for rate-limiter to see real IP behind Render/nginx)
 app.set('trust proxy', 1);
 
-app.use(cors({ origin: process.env.FRONTEND_URL || '*' }));
+const allowedOrigins = (process.env.FRONTEND_URL || "*").split(",");
+app.use(cors({ origin: (origin, cb) => { if (!origin || allowedOrigins.includes("*") || allowedOrigins.includes(origin)) cb(null, true); else cb(new Error("CORS")); } }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
