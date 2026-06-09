@@ -15,7 +15,7 @@ const appJsPath = path.join(FRONTEND, 'js', 'app.js');
 let appJs = fs.readFileSync(appJsPath, 'utf8');
 appJs = appJs.replace(/const API_BASE = '[^']*';/, `const API_BASE = '${API_URL}/api';`);
 fs.writeFileSync(appJsPath, appJs);
-console.log('[inject] app.js patched');
+console.log('[inject] app.js patched to: ' + API_URL);
 
 // Patch HTML pages
 const pagesDir = path.join(FRONTEND, 'pages');
