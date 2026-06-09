@@ -4,39 +4,13 @@ const config: CapacitorConfig = {
   appId: 'com.bixcart.app',
   appName: 'Bixcart',
   webDir: 'frontend',
-
-  server: {
-    // Set BIXCART_API_URL in GitHub secrets.
-    // inject-api-url.js will uncomment and fill this before every native build.
-    // url: 'https://your-backend.onrender.com',
-    cleartext: false,
-  },
-
   plugins: {
-    PushNotifications: {
-      presentationOptions: ['badge', 'sound', 'alert'],
-    },
-    StatusBar: {
-      style: 'LIGHT',
-      backgroundColor: '#ffffff',
-    },
-    SplashScreen: {
-      launchShowDuration: 1200,
-      backgroundColor: '#ffffff',
-      showSpinner: false,
-    },
+    PushNotifications: { presentationOptions: ['badge', 'sound', 'alert'] },
+    StatusBar: { style: 'LIGHT', backgroundColor: '#ffffff' },
+    SplashScreen: { launchShowDuration: 0, launchAutoHide: true, backgroundColor: '#ffffff', showSpinner: false },
   },
-
-  android: {
-    allowMixedContent: false,
-    captureInput: true,
-    webContentsDebuggingEnabled: false,
-  },
-
-  ios: {
-    contentInset: 'always',
-    scrollEnabled: true,
-  },
+  android: { allowMixedContent: false, captureInput: true, webContentsDebuggingEnabled: false, initialFocus: true },
+  ios: { contentInset: 'always', scrollEnabled: true },
 };
 
 export default config;
