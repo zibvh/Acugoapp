@@ -92,3 +92,5 @@ jobs:
   #       with:
   #         name: bixcart-release-${{ github.sha }}
   #         path: android/app/build/outputs/apk/release/app-release.apk
+      - name: Verify API_BASE in app.js
+        run: grep "API_BASE" android/app/src/main/assets/public/js/app.js
