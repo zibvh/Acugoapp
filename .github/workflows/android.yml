@@ -44,7 +44,7 @@ jobs:
         run: grep "API_BASE" android/app/src/main/assets/public/js/app.js
 
       - name: Decode keystore
-        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/bixcart.jks
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > ${{ github.workspace }}/android/app/bixcart.jks
 
       - name: Make gradlew executable
         run: chmod +x android/gradlew
@@ -57,7 +57,7 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           ./gradlew assembleRelease \
-            -Pandroid.injected.signing.store.file=bixcart.jks \
+            -Pandroid.injected.signing.store.file=${{ github.workspace }}/android/app/bixcart.jks \
             -Pandroid.injected.signing.store.password=$KEYSTORE_PASSWORD \
             -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
             -Pandroid.injected.signing.key.password=$KEY_PASSWORD \
